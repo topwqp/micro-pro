@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: '@pom.name@'
+security:  
+  basic:  
+    enabled: false  
+management:
+  security:
+    enabled: false
+logging:
+  config: classpath:logback-spring.xml
+  file: '@pom.name@'
+  path: '/xs/logs/@pom.name@/'
+  level:
+    root: INFO
+info:
+  build:
+    name: '@pom.name@'
+    description: '@pom.description@'
+    version: '@pom.version@'

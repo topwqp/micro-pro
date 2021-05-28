@@ -1,0 +1,33 @@
+server:
+  port: 14100
+  compression:
+    enabled: true
+    mime-types: 'text/html,text/xml,text/css,text/javascript,text/plain'
+  tomcat:
+    max-connections: 500
+    max-threads: 100
+spring:
+  profiles:
+    active: local    #默认激活local配置
+  boot:
+    admin:
+      client:
+        prefer-ip: true
+endpoints: 
+  shutdown:
+    enabled: true     #启动shutdown
+    sensitive: false  #禁用密码验证
+    
+---
+spring:
+  profiles: local
+eureka:
+  server: 
+    enable-self-preservation: false               # 关闭自我保护模式（缺省为打开）
+    eviction-interval-timer-in-ms: 5000           # 续期时间，即扫描失效服务的间隔时间（缺省为60*1000ms）
+  client:
+    registerWithEureka: false                     #是否将eureka自身作为应用注册到eureka注册中心
+    fetchRegistry: false                          #为true时，可以启动，但报异常：Cannot execute request on any known server
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: micro-eureka
+  namespace: prd
+spec:
+  selector:
+    matchLabels:
+      app: micro-eureka
+  serviceName: "micro-eureka"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: micro-eureka
+    spec:
+      initContainers:
+      - image: $HARBOR_URL/$HARBOR_NAMESPACE/$APP_NAME:$BUILD_NUMBER
+        name: cpjarfile
+        command: ["/bin/sh","-c","cp /init.sh /app/ && cp /micro-eureka-0.0.1-SNAPSHOT.jar /app/"]
+        volumeMounts:
+        - mountPath: /app
+          name: app-volume
+      containers:
+      - name: micro-eureka
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_IN_SERVICE_NAME 
+          value: micro-eureka
+        - name: EUREKA_APPLICATION_NAME
+          value: "micro-eureka"
+        - name: EUREKA_REPLICAS
+          value: "2"
+        image: $HARBOR_URL/runtime/runtime_centos75_jdk18:101
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-c", "mkdir -p /xs/k8slogs/$(MY_NODE_NAME)-$(MY_POD_NAME)-$(MY_POD_IP)/micro-eureka && ln -s /xs/k8slogs/$(MY_NODE_NAME)-$(MY_POD_NAME)-$(MY_POD_IP)/micro-eureka /xs/logs/micro-eureka && mkdir -p /xs/webapps/micro-eureka && mkdir -p /xs/scripts && cp /xs/webapps/micro-eureka-0.0.1-SNAPSHOT.jar /xs/webapps/micro-eureka/ &&cp /xs/webapps/init.sh /xs/scripts/ && sh /xs/scripts/init.sh"]
+        volumeMounts:
+        - mountPath: /xs/webapps
+          name: app-volume
+        - mountPath: /xs/k8slogs
+          name: applogs-vlolume
+        ports:
+        - containerPort: 14100
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /info
+            port: http
+          initialDelaySeconds: 70
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /info
+            port: http
+          initialDelaySeconds: 70
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: "1"
+            memory: 3096Mi
+          requests:
+            cpu: "100m"
+            memory: 512Mi
+      volumes:
+      - name: applogs-vlolume
+        hostPath:
+          path: "/xs/k8s_logs"
+      - name: app-volume
+        emptyDir: {}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

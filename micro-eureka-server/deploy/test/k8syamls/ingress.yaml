@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: micro-eureka
+  namespace: test8
+  labels:
+    app: micro-eureka
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    
+spec:
+  rules:
+    - host: test11.micro-eureka.qy.sit
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: micro-eureka
+            servicePort: 14100

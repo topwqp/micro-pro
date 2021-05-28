@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: micro-eureka
+  namespace: prd
+  labels:
+    app: micro-eureka
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    
+spec:
+  rules:
+    - host: micro-eureka.qy.prd
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: micro-eureka
+            servicePort: 14100
